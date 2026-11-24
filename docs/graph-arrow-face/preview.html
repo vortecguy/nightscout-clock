@@ -1,0 +1,369 @@
+<meta charset="utf-8">
+<title>Graph + Arrow Face</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a single column of "bench" rows; each row holds the real 32x8 panel rendered pixel-for-pixel, old face beside new face. */
+:root {
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --fg: #16202a;
+  --muted: #5b6875;
+  --line: #d5dce3;
+  --accent: #0d7c6b;
+  --device: #17191c;
+  --device-edge: #2a2e33;
+  --led-off: #23262b;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1418; --surface: #161d22; --fg: #e4eaef; --muted: #93a1ad; --line: #26313a; --accent: #3fc9b0;
+    --device: #0a0b0d; --device-edge: #22262b; --led-off: #1b1e22; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1418; --surface: #161d22; --fg: #e4eaef; --muted: #93a1ad; --line: #26313a; --accent: #3fc9b0;
+  --device: #0a0b0d; --device-edge: #22262b; --led-off: #1b1e22; color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); line-height: 1.55; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 40px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 40px; }
+h1, h2 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+h2 { font-size: 1.3rem; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font: 600 0.72rem/1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+header { display: grid; gap: 12px; }
+.lede { color: var(--muted); font-size: 1.05rem; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; font-size: 0.9rem; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { font: 500 0.85rem var(--font-body); color: var(--fg); background: none; border: 0; padding: 7px 12px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.hero { display: grid; gap: 14px; }
+.ruler-box { overflow-x: auto; }
+canvas { display: block; max-width: 100%; height: auto; image-rendering: auto; }
+.device { background: linear-gradient(180deg, var(--device-edge), var(--device)); border-radius: 14px; padding: 14px; box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset, 0 10px 30px rgba(0,0,0,0.25); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font: 0.8rem var(--font-mono); color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: var(--c); }
+
+.rows { display: grid; gap: 18px; }
+.row { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 14px; }
+.row-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; align-items: baseline; }
+.row-head h3 { margin: 0; font: 600 1rem var(--font-body); }
+.row-head .meta { font: 0.8rem var(--font-mono); color: var(--muted); }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.pair figure { margin: 0; display: grid; gap: 8px; min-width: 0; }
+.pair figcaption { font: 0.78rem var(--font-mono); color: var(--muted); }
+.pair figcaption b { color: var(--fg); font-weight: 600; }
+@media (max-width: 640px) { .pair { grid-template-columns: 1fr; } }
+
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+.note { display: grid; gap: 8px; align-content: start; }
+.note h2 { font-size: 1.05rem; }
+.note p, .note li { color: var(--muted); font-size: 0.93rem; }
+.note ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
+.get { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.card { display: grid; gap: 8px; align-content: start; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.card h2 { font-size: 1.05rem; }
+.card p { color: var(--muted); font-size: .93rem; }
+.linkbtn { justify-self: start; display: inline-block; text-decoration: none; font: 600 .9rem var(--font-body); border-radius: 9px;
+  padding: 9px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+.linkbtn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.linkbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.links { display: flex; flex-wrap: wrap; gap: 10px; }
+.url { font: .78rem var(--font-mono); color: var(--muted); overflow-wrap: anywhere; user-select: all; }
+.disclaimer { font-size: .85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+code { font: 0.86em var(--font-mono); background: color-mix(in srgb, var(--line) 55%, transparent); padding: 1px 5px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Nightscout Clock for the Ulanzi TC001 · new face</div>
+    <h1>Graph, value and trend arrow on one screen</h1>
+    <div class="links">
+      <a class="linkbtn primary" href="https://github.com/vortecguy/nightscout-clock/tree/graph-arrow-face" target="_blank" rel="noopener">Code on GitHub</a>
+      <a class="linkbtn" href="https://www.amazon.com/dp/B0CXX91TY5" target="_blank" rel="noopener">Ulanzi TC001 on Amazon</a>
+    </div>
+    <p class="lede">A new clock face for <a href="https://github.com/ktomy/nightscout-clock" target="_blank" rel="noopener">Nightscout Clock</a>, now built and running on a Ulanzi TC001 with Dexcom Share. This page draws the TC001's 32 × 8 display pixel for pixel, with the firmware's own 3 × 5 digits, 5 × 5 trend arrows and default range colors. Readings below are made-up examples.</p>
+  </header>
+
+  <section class="hero" aria-labelledby="layout-h">
+    <h2 id="layout-h">Pixel layout</h2>
+    <p>The graph fills the left side, one column per 5‑minute Dexcom reading, newest on the right. The value sits next to it, and the arrow takes the same right-hand spot it uses on the Simple face. The bottom row under the value shows the minutes-since-reading dots the other faces already use.</p>
+    <div class="ruler-box"><div class="device"><canvas id="ruler" aria-label="Zoomed 32 by 8 pixel layout with column numbers"></canvas></div></div>
+    <div class="legend">
+      <span style="--c:#00ff00">in range</span>
+      <span style="--c:#ffff00">low / high</span>
+      <span style="--c:#ff0000">urgent</span>
+      <span style="--c:#ffffff">trend arrow</span>
+      <span style="--c:#a5a5a5">old data</span>
+    </div>
+  </section>
+
+  <section class="rows" aria-labelledby="cmp-h">
+    <div class="row-head" style="padding:0 2px">
+      <h2 id="cmp-h">Built-in "Graph and BG" vs the new face</h2>
+      <div class="controls">
+        <span>Graph span setting</span>
+        <div class="seg" role="group" aria-label="Graph span setting">
+          <button type="button" id="span1" aria-pressed="false" data-hours="1">1 hour</button>
+          <button type="button" id="span2" aria-pressed="true" data-hours="2">2 hours</button>
+          <button type="button" id="span3" aria-pressed="false" data-hours="3">3 hours</button>
+        </div>
+      </div>
+    </div>
+    <div id="scenarios" class="rows"></div>
+  </section>
+
+  <section class="notes" aria-label="About the face">
+    <div class="note">
+      <h2>Status</h2>
+      <p>Built from Nightscout Clock 1.3.5 and running on a TC001, reading Dexcom Share. The face is called <b>Graph, value and arrow</b> and has a <b>Graph span</b> setting of 1, 2 or 3 hours under Clock faces.</p>
+    </div>
+    <div class="note">
+      <h2>How it works</h2>
+      <ul>
+        <li>A ~40-line face that reuses the firmware's own graph, value and arrow drawing.</li>
+        <li>Each graph column averages the readings in its slice of the span, and never covers less than 5 minutes, so there are no gaps between Dexcom readings.</li>
+        <li>The settings page preview shows it too.</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h2>Trade-offs</h2>
+      <ul>
+        <li>With a 3-digit value the graph has 14 columns; a 2-digit value leaves 18.</li>
+        <li>The arrow takes 4 more columns than the built-in face's trend bar.</li>
+        <li>mmol/L values like <code>6.2</code> fit the same space.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="get" aria-label="Get it">
+    <div class="card">
+      <div class="eyebrow">Firmware</div>
+      <h2>The code on GitHub</h2>
+      <p>The <code>graph-arrow-face</code> branch of a fork of Nightscout Clock (LGPL-2.1). It is not in the official release yet: build it with PlatformIO and flash it over USB.</p>
+      <a class="linkbtn primary" href="https://github.com/vortecguy/nightscout-clock/tree/graph-arrow-face" target="_blank" rel="noopener">Open the branch</a>
+      <span class="url">https://github.com/vortecguy/nightscout-clock/tree/graph-arrow-face</span>
+    </div>
+    <div class="card">
+      <div class="eyebrow">Hardware</div>
+      <h2>Ulanzi TC001 Smart Pixel Clock</h2>
+      <p>The ESP32 pixel clock this runs on, about $42 on Amazon. Nightscout Clock replaces its stock firmware over USB; back up the original first.</p>
+      <a class="linkbtn" href="https://www.amazon.com/dp/B0CXX91TY5" target="_blank" rel="noopener">View on Amazon</a>
+      <span class="url">https://www.amazon.com/dp/B0CXX91TY5</span>
+    </div>
+  </section>
+  <p class="disclaimer">A hobby project, not a medical device, and not affiliated with Dexcom, Ulanzi or the Nightscout Clock author. Keep using your Dexcom app and its alarms.</p>
+</div>
+
+<script>
+(() => {
+  const W = 32, H = 8;
+  const C = { green: "#00ff00", yellow: "#ffff00", red: "#ff0000", white: "#ffffff", gray: "#a5a5a5" };
+  const LIM = { urgLow: 55, low: 70, high: 180, urgHigh: 250 };
+
+  // Firmware glyphs: AwtrixFont digits (3x5) and the 5x5 trend symbols, MSB-first.
+  const DIG = {
+    "0":[0xE0,0xA0,0xA0,0xA0,0xE0], "1":[0x40,0xC0,0x40,0x40,0xE0], "2":[0xE0,0x20,0xE0,0x80,0xE0],
+    "3":[0xE0,0x20,0xE0,0x20,0xE0], "4":[0xA0,0xA0,0xE0,0x20,0x20], "5":[0xE0,0x80,0xE0,0x20,0xE0],
+    "6":[0xE0,0x80,0xE0,0xA0,0xE0], "7":[0xE0,0x20,0x20,0x20,0x20], "8":[0xE0,0xA0,0xE0,0xA0,0xE0],
+    "9":[0xE0,0xA0,0xE0,0x20,0xE0]
+  };
+  const ARROW = {
+    DOUBLE_UP:[0x50,0xF8,0x50,0x50,0x50], SINGLE_UP:[0x20,0x70,0xA8,0x20,0x20], FORTY_FIVE_UP:[0x38,0x18,0x28,0x40,0x80],
+    FLAT:[0x20,0x10,0xF8,0x10,0x20], FORTY_FIVE_DOWN:[0x80,0x40,0x28,0x18,0x38], SINGLE_DOWN:[0x20,0x20,0xA8,0x70,0x20],
+    DOUBLE_DOWN:[0x50,0x50,0x50,0xF8,0x50], OLD:[0x88,0x50,0x20,0x50,0x88]
+  };
+
+  function level(v) {
+    if (v <= LIM.urgLow) return "urgLow";
+    if (v < LIM.low) return "low";
+    if (v <= LIM.high) return "normal";
+    if (v < LIM.urgHigh) return "high";
+    return "urgHigh";
+  }
+  const levelColor = { urgLow: C.red, low: C.yellow, normal: C.green, high: C.yellow, urgHigh: C.red };
+
+  // Same row mapping as BGDisplayFaceGraphBase::showGraph.
+  function graphY(v) {
+    switch (level(v)) {
+      case "urgHigh": return 0;
+      case "high": return 1;
+      case "low": return 6;
+      case "urgLow": return 7;
+      default: {
+        const outMax = 5 + 1 - 2;
+        const rel = Math.trunc((v - LIM.low) * outMax / (LIM.high - LIM.low));
+        return 5 - rel;
+      }
+    }
+  }
+
+  const blank = () => Array.from({ length: H }, () => Array(W).fill(null));
+  const px = (f, x, y, c) => { if (x >= 0 && x < W && y >= 0 && y < H) f[y][x] = c; };
+  function bitmap(f, x, y, rows, w, c) {
+    rows.forEach((r, j) => { for (let i = 0; i < w; i++) if (r & (0x80 >> i)) px(f, x + i, y + j, c); });
+  }
+  function text(f, x, y, s, c) { // y = top row
+    let cx = x;
+    for (const ch of s) {
+      if (ch === ".") { px(f, cx, y + 4, c); cx += 2; continue; }
+      bitmap(f, cx, y, DIG[ch], 3, c); cx += 4;
+    }
+  }
+  const textWidth = s => [...s].reduce((w, ch) => w + (ch === "." ? 2 : 4), 0) - 1;
+
+  // readings: oldest..newest, one every 5 minutes; the clock keeps 3 hours. Like showGraph, column i
+  // (from the right) averages the readings whose age falls in its slice of `spanMin` minutes.
+  function graph(f, x0, cols, readings, spanMin) {
+    const w = spanMin / cols;
+    for (let i = 0; i < cols; i++) {
+      const vals = [];
+      readings.forEach((v, k) => {
+        const age = (readings.length - 1 - k) * 5;
+        if (age <= 180 && age >= i * w && age < (i + 1) * w) vals.push(v);
+      });
+      if (!vals.length) continue;
+      const avg = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+      px(f, x0 + cols - 1 - i, graphY(avg), levelColor[level(avg)]);
+    }
+  }
+  // The new face's span: the setting, but never less than 5 minutes per column.
+  const newFaceSpan = (hours, cols) => Math.max(hours * 60, cols * 5);
+  function timer(f, x0, width, minsAgo, old) {
+    const n = Math.min(5, Math.max(0, minsAgo));
+    const bs = Math.floor((width - 4) / 5);
+    if (n <= 0 || bs < 1) return;
+    const start = x0 + Math.floor((width - (bs * 5 + 4)) / 2);
+    const col = old ? C.gray : (minsAgo >= 6 ? C.yellow : C.green);
+    for (let i = 0; i < n; i++) for (let j = 0; j < bs; j++) px(f, start + i * (bs + 1) + j, 7, col);
+  }
+
+  // Existing face: graph | value | 1px trend bar in column 31.
+  const BAR = {
+    DOUBLE_UP:[[0,C.red],[1,C.yellow],[2,C.green],[3,C.white]], SINGLE_UP:[[1,C.yellow],[2,C.green],[3,C.white]],
+    FORTY_FIVE_UP:[[2,C.green],[3,C.white]], FLAT:[[3,C.white],[4,C.white]],
+    FORTY_FIVE_DOWN:[[4,C.white],[5,C.green]], SINGLE_DOWN:[[4,C.white],[5,C.green],[6,C.yellow]],
+    DOUBLE_DOWN:[[4,C.white],[5,C.green],[6,C.yellow],[7,C.red]]
+  };
+  function existingFace(s) {
+    const f = blank(); const v = String(s.value); const tw = textWidth(v) + 1;
+    const gw = W - tw - 2;
+    graph(f, 0, gw, s.readings, gw * 5);
+    text(f, 31 - tw, 1, v, s.old ? C.gray : levelColor[level(s.value)]);
+    if (!s.old) (BAR[s.trend] || []).forEach(([y, c]) => px(f, 31, y, c));
+    timer(f, gw, tw + 2, s.minsAgo, s.old);
+    return { f, gw };
+  }
+  // New face: graph | gap | value | gap | 5x5 arrow at x27, timer dots under value+arrow.
+  function proposedFace(s, hours) {
+    const f = blank(); const v = String(s.value); const tw = textWidth(v);
+    const valueX = 26 - tw;            // value ends at x25, gap at x26
+    const gw = valueX - 1;             // gap column before value
+    const span = newFaceSpan(hours, gw);
+    graph(f, 0, gw, s.readings, span);
+    text(f, valueX, 1, v, s.old ? C.gray : levelColor[level(s.value)]);
+    bitmap(f, 27, 1, s.old ? ARROW.OLD : ARROW[s.trend], 5, s.old ? C.gray : C.white);
+    timer(f, valueX - 1, W - valueX + 1, s.minsAgo, s.old);
+    return { f, gw, valueX, tw, span };
+  }
+
+  function draw(canvas, frame, opts = {}) {
+    const cell = opts.cell || 16, pad = opts.ruler ? 22 : 0;
+    const dpr = window.devicePixelRatio || 1;
+    const cw = W * cell, ch = H * cell + pad * (opts.ruler ? 2 : 0);
+    canvas.width = cw * dpr; canvas.height = ch * dpr;
+    canvas.style.width = cw + "px"; canvas.style.aspectRatio = cw + " / " + ch;
+    const g = canvas.getContext("2d"); g.scale(dpr, dpr);
+    const css = getComputedStyle(document.documentElement);
+    const off = css.getPropertyValue("--led-off").trim() || "#222";
+    const top = opts.ruler ? pad : 0;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const c = frame[y][x], cx = x * cell + cell / 2, cy = top + y * cell + cell / 2, r = cell * 0.38;
+      if (c) { g.shadowColor = c; g.shadowBlur = cell * 0.55; }
+      g.fillStyle = c || off;
+      g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
+      g.shadowBlur = 0;
+    }
+    if (opts.ruler) {
+      g.font = "600 10px 'JetBrains Mono', monospace"; g.textAlign = "center"; g.fillStyle = "#8d98a3";
+      for (let x = 0; x < W; x += 1) if (x % 4 === 0 || x === 31) g.fillText(String(x), x * cell + cell / 2, 14);
+      const zones = opts.zones;
+      g.textBaseline = "middle";
+      zones.forEach(z => {
+        const x1 = z.from * cell + 3, x2 = (z.to + 1) * cell - 3, y = top + H * cell + 10;
+        g.strokeStyle = "#8d98a3"; g.lineWidth = 1;
+        g.beginPath(); g.moveTo(x1, y - 4); g.lineTo(x1, y); g.lineTo(x2, y); g.lineTo(x2, y - 4); g.stroke();
+        g.fillStyle = "#b9c3cc"; g.fillText(z.label, (x1 + x2) / 2, y + 9);
+      });
+    }
+  }
+
+  // Example data: 3.5 hours at 5-minute steps (42 readings), oldest first.
+  function series(fn) { return Array.from({ length: 42 }, (_, i) => Math.round(fn(i, 41 - i))); }
+  const scenarios = [
+    { name: "Steady, in range", value: 112, trend: "FLAT", minsAgo: 2,
+      readings: series(i => 118 + 10 * Math.sin(i / 5)).slice(0, -1).concat(112) },
+    { name: "Rising after a meal", value: 168, trend: "FORTY_FIVE_UP", minsAgo: 1,
+      readings: series((i, a) => a > 14 ? 105 + 6 * Math.sin(i / 3) : 105 + (14 - a) * 4.5).slice(0, -1).concat(168) },
+    { name: "High and still climbing", value: 214, trend: "SINGLE_UP", minsAgo: 3,
+      readings: series((i, a) => a > 16 ? 150 + 8 * Math.sin(i / 4) : 150 + (16 - a) * 4).slice(0, -1).concat(214) },
+    { name: "Dropping toward low", value: 74, trend: "SINGLE_DOWN", minsAgo: 1,
+      readings: series((i, a) => a > 12 ? 140 + 6 * Math.sin(i / 4) : 140 - (12 - a) * 5.6).slice(0, -1).concat(74) },
+    { name: "Urgent low", value: 52, trend: "DOUBLE_DOWN", minsAgo: 2,
+      readings: series((i, a) => a > 9 ? 120 : 120 - (9 - a) * 7.4).slice(0, -1).concat(52) },
+    { name: "Two-digit value gets a wider graph", value: 96, trend: "FORTY_FIVE_DOWN", minsAgo: 4,
+      readings: series(i => 125 - i * 0.7 + 7 * Math.sin(i / 3)).slice(0, -1).concat(96) },
+    { name: "Reading is too old", value: 131, trend: "FLAT", minsAgo: 5, old: true,
+      readings: series(i => 125 + 8 * Math.sin(i / 4)).slice(0, -1).concat(131) },
+  ];
+
+  let spanHours = 2;
+  const host = document.getElementById("scenarios");
+  const fmtSpan = m => m >= 60 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")}` : `${m} min`;
+
+  function render() {
+    host.textContent = "";
+    scenarios.forEach(s => {
+      const ex = existingFace(s), pr = proposedFace(s, spanHours);
+      const row = document.createElement("article"); row.className = "row";
+      row.innerHTML = `
+        <div class="row-head"><h3>${s.name}</h3>
+          <span class="meta">${s.value} mg/dL · ${s.trend.replace(/_/g, " ").toLowerCase()} · ${s.minsAgo} min ago</span></div>
+        <div class="pair">
+          <figure><div class="device"><canvas></canvas></div>
+            <figcaption><b>Graph and BG</b> · graph ${fmtSpan(ex.gw * 5)} · trend bar</figcaption></figure>
+          <figure><div class="device"><canvas></canvas></div>
+            <figcaption><b>New face</b> · graph ${fmtSpan(pr.span)} · trend arrow</figcaption></figure>
+        </div>`;
+      host.appendChild(row);
+      const [c1, c2] = row.querySelectorAll("canvas");
+      draw(c1, ex.f, { cell: 14 }); draw(c2, pr.f, { cell: 14 });
+    });
+    const sample = scenarios[1], p = proposedFace(sample, spanHours);
+    draw(document.getElementById("ruler"), p.f, { cell: 30, ruler: true, zones: [
+      { from: 0, to: p.gw - 1, label: `graph · ${p.gw} cols · ${fmtSpan(p.span)}` },
+      { from: p.valueX, to: p.valueX + p.tw - 1, label: "value" },
+      { from: 27, to: 31, label: "arrow" },
+    ]});
+  }
+
+  document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".seg button").forEach(o => o.setAttribute("aria-pressed", String(o === b)));
+    spanHours = Number(b.dataset.hours); render();
+  }));
+  matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", render);
+  new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  render();
+})();
+</script>

@@ -12,6 +12,10 @@ _Nightscout Clock (or NSClock) is an open-source product aimed at helping caregi
 
 **Website: [nsclock.app](https://nsclock.app/)**, where you can install the firmware from your browser and try every clock face in the simulator.
 
+> **About this fork:** the `graph-arrow-face` branch adds a **Graph, value and arrow** face, with a glucose graph, the value and the trend arrow on one screen. See [docs/graph-arrow-face](docs/graph-arrow-face/README.md) for pictures, the setting and how to install it, or [try the interactive preview](https://claude.ai/artifact/RaZojfXw5Qzmf7jxABbBFC).
+>
+> <img src="docs/graph-arrow-face/rising.png" width="420" alt="The Graph, value and arrow face on the TC001 display">
+
 <img width="500" alt="Photo of the Nightscout Clock" src="https://github.com/user-attachments/assets/f8005f49-6e32-43f1-bd84-0bb4e4691d7f" />
 
 ## Here is what it can do
