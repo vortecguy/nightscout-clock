@@ -54,6 +54,7 @@ void BGDisplayManager_::setup() {
         {"big_text_rainbow", "Rainbow big text", new BGDisplayFaceBigTextRainbow()},
         {"rainbow_mood", "Rainbow mood", new BGDisplayFaceRainbowMood()},
         {"battery_uptime", "Battery and uptime", new BGDisplayFaceBatteryUptime()},
+        {"graph_arrow", "Graph, value and arrow", new BGDisplayFaceGraphArrow()},
     };
 
     configureActiveFaces();

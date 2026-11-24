@@ -298,6 +298,10 @@ bool SettingsManager_::loadSettingsFromFile() {
     JsonObject dragon = (*doc)["face_dragon"].as<JsonObject>();
     settings.face_dragon.speed = animationSpeedFromString(dragon["speed"].as<String>());
 
+    // Graph, value and arrow face: 1 to 3 hours, the readings the clock keeps.
+    const int spanHours = (*doc)["face_graph_arrow"]["span_hours"] | 2;
+    settings.face_graph_arrow.span_hours = spanHours >= 1 && spanHours <= 3 ? spanHours : 2;
+
     // Web interface authentication
     settings.web_auth_enable = (*doc)["web_auth_enable"].as<bool>();
     settings.web_auth_password = (*doc)["web_auth_password"].as<String>();
@@ -495,6 +499,9 @@ bool SettingsManager_::saveSettingsToFile() {
     // Dragon face
     JsonObject dragon = (*doc)["face_dragon"].to<JsonObject>();
     dragon["speed"] = toString(settings.face_dragon.speed);
+
+    // Graph, value and arrow face
+    (*doc)["face_graph_arrow"]["span_hours"] = settings.face_graph_arrow.span_hours;
 
     // Web interface authentication
     (*doc)["web_auth_enable"] = settings.web_auth_enable;

@@ -95,6 +95,9 @@
     "face_dragon": {
         "speed": "normal"
     },
+    "face_graph_arrow": {
+        "span_hours": 2
+    },
     "web_auth_enable": false,
     "web_auth_password": ""
 }

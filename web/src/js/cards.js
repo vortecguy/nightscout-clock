@@ -427,7 +427,7 @@ function facesCard() {
 
 // Settings that belong to a face, by face id, shown in a drawer while that face is active. Faces sharing
 // settings share one drawer, titled with the active faces it covers.
-const FACE_DRAWERS = { big_text: bigTextSettings, unicorn: unicornSettings, simple_dark: darkFaceSettings, race_car: raceCarSettings, dragon: dragonSettings, big_text_dark: darkFaceSettings }
+const FACE_DRAWERS = { big_text: bigTextSettings, unicorn: unicornSettings, simple_dark: darkFaceSettings, race_car: raceCarSettings, dragon: dragonSettings, big_text_dark: darkFaceSettings, graph_arrow: graphArrowSettings }
 
 function faceDrawers() {
     return reactive(["inactive_faces"], () => {
@@ -485,6 +485,12 @@ function dragonSettings() {
     return el("div.stack",
         field("face_dragon_speed", "Speed", segmented("face_dragon", ANIMATION_SPEEDS, { prop: "speed", label: "Speed" }),
             "The flame moves while the reading is fresh, and goes out when data is old."))
+}
+
+function graphArrowSettings() {
+    return el("div.stack",
+        field("face_graph_arrow_span_hours", "Graph span", segmented("face_graph_arrow", GRAPH_SPANS, { numeric: true, prop: "span_hours", label: "Graph span" }),
+            "How far back the graph reaches. With a three-digit value the graph has 14 columns, so 1 hour shows 70 minutes, one reading per column."))
 }
 
 function raceCarSettings() {

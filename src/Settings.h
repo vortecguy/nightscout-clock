@@ -45,6 +45,11 @@ struct DragonFaceSettings {
     ANIMATION_SPEED speed = ANIMATION_SPEED::NORMAL;
 };
 
+// Graph, value and arrow face: how many hours of readings the graph spans.
+struct GraphArrowFaceSettings {
+    int span_hours = 2;
+};
+
 class Settings {
 public:
     String ssid;
@@ -119,6 +124,7 @@ public:
     SimpleDarkFaceSettings face_simple_dark;
     BigTextDarkFaceSettings face_big_text_dark;
     DragonFaceSettings face_dragon;
+    GraphArrowFaceSettings face_graph_arrow;
     bool alarm_intensive_mode;
     int alarm_repeat_interval_seconds = 300;
     bool web_auth_enable;

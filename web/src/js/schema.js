@@ -78,6 +78,7 @@ const FACES = [
     { id: "big_text_rainbow", name: "Rainbow big text", about: "Large value in a moving rainbow" },
     { id: "rainbow_mood", name: "Rainbow mood", about: "A smiley whose expression follows the glucose range" },
     { id: "battery_uptime", name: "Battery and uptime", about: "Battery level and time since start, no glucose" },
+    { id: "graph_arrow", name: "Graph, value and arrow", about: "Recent readings beside the value and trend arrow" },
 ]
 
 // Clocks set up on 1.0.0 or earlier stored each face as its number, the face's index in this order.
@@ -142,6 +143,7 @@ const AGE_DOTS = [["on", "On"], ["off", "Off"]]
 const MANE_MODES = [["still", "Still"], ["moving", "Moving"]]
 const MANE_FLOWS = [["down", "Top to bottom"], ["back", "Colors scroll back"], ["run", "Light runs along the bands"]]
 const ANIMATION_SPEEDS = [["calm", "Calm"], ["normal", "Normal"], ["lively", "Lively"]]
+const GRAPH_SPANS = [[1, "1 hour"], [2, "2 hours"], [3, "3 hours"]]
 // No glucose colors, which would read as a glucose state, and no gray, which is dark at the lowest brightness.
 const DARK_VALUE_COLORS = [["white", "White"], ["cyan", "Cyan"], ["blue", "Blue"], ["magenta", "Magenta"]]
 const CYCLE_INTERVALS = [[10, "10 s"], [30, "30 s"], [60, "1 min"], [120, "2 min"], [180, "3 min"], [300, "5 min"]]
@@ -526,7 +528,7 @@ const NETWORK_KEYS = ["ssid", "password", "custom_mac", "dhcp", "ip", "netmask",
 const KEY_OPTIONS = {
     data_source: SOURCES, dexcom_server: DEXCOM_SERVERS, librelinkup_region: LLU_REGIONS, units: UNITS, data_old_color: OLD_DATA_COLORS,
     face_cycle_interval_seconds: CYCLE_INTERVALS, time_format: TIME_FORMATS, alarm_repeat_interval_seconds: REPEATS, additional_wifi_type: WIFI_TYPES,
-    default_face: FACES.map(f => [f.id]), inactive_faces: FACES.map(f => [f.id]),
+    default_face: FACES.map(f => [f.id]), inactive_faces: FACES.map(f => [f.id]), "face_graph_arrow.span_hours": GRAPH_SPANS,
     brightness_level: [...Array.from({ length: 10 }, (_, i) => [i + 1]), ...BRIGHTNESS_MODES.filter(m => m[2] != null).map(m => [m[2]])],
     ...Object.fromEntries(ALARMS.map(a => [`alarm_${a.t}_snooze_interval`, SNOOZES])),
 }
